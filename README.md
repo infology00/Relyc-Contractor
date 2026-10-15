@@ -12,41 +12,43 @@ generator and tooling are plain Node scripts.
 npm run dev
 ```
 
-Builds the HTML and serves `site/` at <http://localhost:4173>.
+Builds the HTML and serves the repo root at <http://localhost:4173>.
 
 | Script | What it does |
 | --- | --- |
-| `npm run build` | Generates `site/*.html` + `sitemap.xml` + `robots.txt` from `src/` |
+| `npm run build` | Generates the root `*.html` + `sitemap.xml` + `robots.txt` from `build/src/` |
 | `npm run serve` | Static preview server on port 4173 |
 | `npm run check` | Integrity check: broken links, missing assets, labels, alt text, meta, frame counts |
 | `npm run frames` | Re-extracts the scroll-film frames from `videos/` (needs ffmpeg) |
 | `npm run icons` | Regenerates favicon / touch icons from the vector mark |
 | `npm run og` | Rebuilds the social share image (needs ffmpeg) |
 
-**Deploy:** upload the contents of `site/`. That folder is the whole website.
+**Deploy (GitHub Pages):** push this folder as the repo, then Settings → Pages → *Deploy from a branch* → `main` / `(root)`.
+`index.html` is at the root, so it works as-is. Any other static host: upload the whole folder.
 
 ---
 
 ## Structure
 
 ```
-build.mjs            Generator + site config (phone, address, GA4 id, nav)
-src/partials/        layout · header · footer · preloader  (edit once, applies everywhere)
-src/pages/           One file per page: JSON front-matter + body HTML
-site/                BUILD OUTPUT — deploy this
-  assets/frames/     Scroll-film frame sequences (act1/act2/act3 × w|m)
-  assets/fonts/      Self-hosted variable fonts (Archivo, Inter, JetBrains Mono)
-  assets/vendor/     GSAP + ScrollTrigger + Lenis (pinned versions, self-hosted)
-tools/               Build + asset generation scripts
-videos/              Original source clips (not deployed)
+index.html, about.html …   BUILT PAGES — live at the repo root so GitHub Pages serves them
+assets/                    CSS, JS, fonts, images, docs
+  assets/frames/           Scroll-film frame sequences (act1/act2/act3 × w|m)
+  assets/fonts/            Self-hosted variable fonts (Archivo, Inter, JetBrains Mono)
+  assets/vendor/           GSAP + ScrollTrigger + Lenis (pinned versions, self-hosted)
+.nojekyll                  Tells GitHub Pages to serve files as-is
+build/build.mjs            Generator + site config (phone, address, UEI, GA4 id, nav)
+build/src/partials/        layout · header · footer · preloader  (edit once, applies everywhere)
+build/src/pages/           One file per page: JSON front-matter + body HTML
+build/tools/               Preview server, integrity check, asset generation scripts
 ```
 
-Edit pages in `src/pages/`, **not** in `site/` — the build overwrites `site/*.html`.
+Edit pages in `build/src/pages/`, **not** the root `*.html` — the build overwrites them.
 
 ### Adding or renaming a page
 
-1. Add `src/pages/<slug>.html` with a front-matter comment (copy an existing one).
-2. If it belongs in the main nav, add it to the `NAV` array in `build.mjs`.
+1. Add `build/src/pages/<slug>.html` with a front-matter comment (copy an existing one).
+2. If it belongs in the main nav, add it to the `NAV` array in `build/build.mjs`.
 3. `npm run build`.
 
 Header, footer, drawer, breadcrumbs and sitemap all follow from those two places.
@@ -68,7 +70,7 @@ Header, footer, drawer, breadcrumbs and sitemap all follow from those two places
 The brief specified a colour theme by reference but did not include one, so the
 palette is derived from the brief's own annotation legend — blue for authority,
 amber for attention, grey for structure — recast as an industrial contractor
-palette. All tokens live at the top of `site/assets/css/main.css`; change them
+palette. All tokens live at the top of `assets/css/main.css`; change them
 there and the whole site follows.
 
 ---
@@ -121,9 +123,9 @@ reports `save-data` or 2G, JavaScript fails, or GSAP does not load.
 ### Replacing the videos
 
 Drop new clips in `videos/`, update the three paths at the top of
-`tools/extract-frames.sh`, then `npm run frames`. Frame counts are set in that
+`build/tools/extract-frames.sh`, then `npm run frames`. Frame counts are set in that
 script and must match `data-frames-w` / `data-frames-m` in
-`src/pages/index.html` — `npm run check` verifies they agree.
+`build/src/pages/index.html` — `npm run check` verifies they agree.
 
 ---
 
@@ -152,19 +154,19 @@ honeypot field (`_company_website`) silently discards bot submissions.
 
 ### 2. Analytics
 
-Put the GA4 Measurement ID in `build.mjs` (`SITE.ga4 = 'G-XXXXXXXXXX'`) and
+Put the GA4 Measurement ID in `build/build.mjs` (`SITE.ga4 = 'G-XXXXXXXXXX'`) and
 rebuild. Left blank, **no analytics script is emitted at all**. Then verify in
 Google Search Console (`sitemap.xml` is generated automatically) and link the
 Google Business Profile.
 
 ### 3. Domain
 
-`SITE.origin` in `build.mjs` is `https://relyc.co` — it drives canonicals, Open
+`SITE.origin` in `build/build.mjs` is `https://relyc.co` — it drives canonicals, Open
 Graph URLs, JSON-LD and the sitemap. Change it there if the domain changes.
 
 ### 4. Hosting
 
-`site/_headers` (Netlify / Cloudflare Pages) and `site/.htaccess` (Apache) ship
+`_headers` (Netlify / Cloudflare Pages) and `.htaccess` (Apache) ship
 with caching and security headers: frames and fonts immutable for a year, HTML
 always revalidated.
 
@@ -181,7 +183,7 @@ find every one.
 | Real stat figures (5M+ SF, 100% on-time, 1,000s projects) | Home, About |
 | Past client names + permission to display | Home — currently placeholder names |
 | UEI number · CAGE code · NAICS codes | Government & Certifications |
-| Capability Statement PDF | `site/assets/docs/relyc-capability-statement.pdf` — placeholder in place so the gated download works end to end |
+| Capability Statement PDF | `assets/docs/relyc-capability-statement.pdf` — placeholder in place so the gated download works end to end |
 | Leadership bios | About — grid is built and `hidden`; remove the attribute once supplied |
 | Founding story / milestones | About |
 | Legal review of Privacy, Terms, Accessibility | Those three pages |

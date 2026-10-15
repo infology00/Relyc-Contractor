@@ -185,7 +185,7 @@
       if (e.key === 'Escape' && D.body.classList.contains('menu-open')) { setOpen(false); burger.focus(); }
     });
     W.addEventListener('resize', function () {
-      if (W.innerWidth > 1160 && D.body.classList.contains('menu-open')) setOpen(false);
+      if (W.innerWidth > 1280 && D.body.classList.contains('menu-open')) setOpen(false);
     });
   }
 
